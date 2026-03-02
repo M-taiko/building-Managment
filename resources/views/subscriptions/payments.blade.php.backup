@@ -1,0 +1,446 @@
+@extends('layouts.admin')
+
+@section('page-title', 'تسجيل دفع الاشتراكات')
+
+@section('content')
+<div class="container-fluid">
+    <div class="card shadow">
+        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    تسجيل دفع الاشتراكات الشهرية
+                </h5>
+                <div>
+                    <button type="button" class="btn btn-light me-2" id="addPaymentBtn">
+                        <i class="fas fa-plus-circle me-1"></i>
+                        تسجيل دفعة جديدة
+                    </button>
+                    <button type="button" class="btn btn-warning" id="sendRemindersBtn">
+                        <i class="fas fa-bell me-1"></i>
+                        إرسال تذكير للمتأخرين
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Modern Filters -->
+            <div class="filters-section mb-4">
+                <!-- Year Filter -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-calendar-alt me-1 text-primary"></i>
+                        السنة
+                    </label>
+                    <div class="year-filter-buttons d-flex flex-wrap gap-2">
+                        @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                            <button
+                                type="button"
+                                class="filter-btn year-btn {{ $y == $year ? 'active' : '' }}"
+                                data-year="{{ $y }}"
+                            >
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ $y }}
+                            </button>
+                        @endfor
+                    </div>
+                </div>
+
+                <!-- Month Filter -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-calendar-week me-1 text-success"></i>
+                        الشهر
+                    </label>
+                    <div class="month-filter-buttons d-flex flex-wrap gap-2">
+                        @php
+                            $months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+                            $monthIcons = ['fa-snowflake', 'fa-heart', 'fa-leaf', 'fa-cloud-rain', 'fa-flower', 'fa-sun',
+                                          'fa-fire', 'fa-umbrella-beach', 'fa-wind', 'fa-cloud', 'fa-cloud-rain', 'fa-snowman'];
+                        @endphp
+                        @foreach($months as $index => $monthName)
+                            <button
+                                type="button"
+                                class="filter-btn month-btn {{ ($index + 1) == $month ? 'active' : '' }}"
+                                data-month="{{ $index + 1 }}"
+                            >
+                                <i class="fas {{ $monthIcons[$index] }} me-1"></i>
+                                {{ $monthName }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-filter me-1 text-info"></i>
+                        الحالة
+                    </label>
+                    <div class="status-filter-buttons d-flex flex-wrap gap-2">
+                        <button type="button" class="filter-btn status-btn active" data-status="">
+                            <i class="fas fa-list me-1"></i>
+                            الكل
+                        </button>
+                        <button type="button" class="filter-btn status-btn status-paid" data-status="paid">
+                            <i class="fas fa-check-circle me-1"></i>
+                            مدفوع
+                        </button>
+                        <button type="button" class="filter-btn status-btn status-pending" data-status="pending">
+                            <i class="fas fa-clock me-1"></i>
+                            معلق
+                        </button>
+                        <button type="button" class="filter-btn status-btn status-overdue" data-status="overdue">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            متأخر
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Subscription Type Filter -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-tag me-1 text-warning"></i>
+                        نوع الاشتراك
+                    </label>
+                    <div class="subscription-type-filter d-flex flex-wrap gap-2">
+                        <button type="button" class="filter-btn type-btn active" data-type="">
+                            <i class="fas fa-list me-1"></i>
+                            الكل
+                        </button>
+                        @foreach($subscriptionTypes as $type)
+                            <button type="button" class="filter-btn type-btn" data-type="{{ $type->id }}">
+                                <i class="fas fa-bookmark me-1"></i>
+                                {{ $type->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card card border-0 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="card-body text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title mb-1">تم الدفع</h6>
+                                    <h2 class="mb-0" id="paidCount">0</h2>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card card border-0 shadow-sm" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <div class="card-body text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title mb-1">معلق</h6>
+                                    <h2 class="mb-0" id="pendingCount">0</h2>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock fa-3x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card card border-0 shadow-sm" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <div class="card-body text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title mb-1">متأخر</h6>
+                                    <h2 class="mb-0" id="overdueCount">0</h2>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Table -->
+            <div class="table-responsive">
+                <table id="paymentsTable" class="table table-bordered table-hover">
+                    <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <tr>
+                            <th>رقم الشقة</th>
+                            <th>اسم الساكن</th>
+                            <th>نوع الاشتراك</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Add Payment -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="addPaymentModalContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<style>
+    .filter-btn {
+        padding: 10px 20px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .year-btn {
+        min-width: 100px;
+    }
+
+    .month-btn {
+        min-width: 110px;
+    }
+
+    .status-btn {
+        min-width: 120px;
+    }
+
+    .status-btn.status-paid:not(.active) {
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    .status-btn.status-paid:not(.active):hover {
+        background: #10b981;
+        color: white;
+    }
+
+    .status-btn.status-pending:not(.active) {
+        border-color: #f59e0b;
+        color: #f59e0b;
+    }
+
+    .status-btn.status-pending:not(.active):hover {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .status-btn.status-overdue:not(.active) {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+
+    .status-btn.status-overdue:not(.active):hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    .type-btn {
+        min-width: 120px;
+    }
+
+    .stat-card {
+        border-radius: 15px;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .filters-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        border: 2px solid #e5e7eb;
+    }
+
+    .table thead th {
+        border: none;
+    }
+</style>
+@endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    let table;
+    let selectedYear = {{ $year }};
+    let selectedMonth = {{ $month }};
+    let selectedStatus = '';
+    let selectedType = '';
+
+    function loadTable() {
+        if (table) {
+            table.destroy();
+        }
+
+        table = $('#paymentsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route('subscriptions.payments') }}',
+                data: {
+                    year: selectedYear,
+                    month: selectedMonth,
+                    subscription_type_id: selectedType,
+                    status: selectedStatus
+                }
+            },
+            columns: [
+                { data: 'apartment_number', name: 'apartment_number' },
+                { data: 'resident_name', name: 'resident_name' },
+                { data: 'subscription_type_name', name: 'subscription_type_name' },
+                { data: 'amount', name: 'amount' },
+                { data: 'status_label', name: 'status' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json'
+            },
+            drawCallback: function() {
+                updateStatistics();
+            }
+        });
+    }
+
+    function updateStatistics() {
+        $.get('{{ route('subscriptions.payments') }}', {
+            year: selectedYear,
+            month: selectedMonth,
+            subscription_type_id: selectedType,
+            status: selectedStatus
+        }, function(response) {
+            const data = response.data || [];
+            const paidCount = data.filter(s => s.status === 'paid').length;
+            const pendingCount = data.filter(s => s.status === 'pending').length;
+            const overdueCount = data.filter(s => s.status === 'overdue').length;
+
+            $('#paidCount').text(paidCount);
+            $('#pendingCount').text(pendingCount);
+            $('#overdueCount').text(overdueCount);
+        });
+    }
+
+    // Year filter
+    $('.year-btn').click(function() {
+        $('.year-btn').removeClass('active');
+        $(this).addClass('active');
+        selectedYear = $(this).data('year');
+        loadTable();
+    });
+
+    // Month filter
+    $('.month-btn').click(function() {
+        $('.month-btn').removeClass('active');
+        $(this).addClass('active');
+        selectedMonth = $(this).data('month');
+        loadTable();
+    });
+
+    // Status filter
+    $('.status-btn').click(function() {
+        $('.status-btn').removeClass('active');
+        $(this).addClass('active');
+        selectedStatus = $(this).data('status');
+        loadTable();
+    });
+
+    // Type filter
+    $('.type-btn').click(function() {
+        $('.type-btn').removeClass('active');
+        $(this).addClass('active');
+        selectedType = $(this).data('type');
+        loadTable();
+    });
+
+    // Initial load
+    loadTable();
+
+    // Add payment button
+    $('#addPaymentBtn').click(function() {
+        $('#addPaymentModalContent').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i><p class="mt-3">جاري التحميل...</p></div>');
+        $('#addPaymentModal').modal('show');
+
+        // Load the create form via AJAX
+        $.get('{{ route('subscriptions.create') }}', function(response) {
+            $('#addPaymentModalContent').html(response.html);
+        }).fail(function() {
+            $('#addPaymentModalContent').html(`
+                <div class="alert alert-danger m-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    حدث خطأ أثناء تحميل النموذج. يرجى المحاولة مرة أخرى.
+                </div>
+            `);
+        });
+    });
+
+    // Mark as paid
+    $(document).on('click', '.mark-paid-btn', function() {
+        const id = $(this).data('id');
+        if (confirm('هل تريد تسجيل هذا الاشتراك كمدفوع؟')) {
+            $.ajax({
+                url: `/subscriptions/${id}/mark-paid`,
+                method: 'POST',
+                success: function(response) {
+                    toastr.success(response.message);
+                    table.ajax.reload();
+                },
+                error: function() {
+                    toastr.error('حدث خطأ أثناء تسجيل الدفع');
+                }
+            });
+        }
+    });
+
+    // Send reminders
+    $('#sendRemindersBtn').click(function() {
+        if (confirm('هل تريد إرسال تذكير لجميع المتأخرين عن الدفع؟')) {
+            $.ajax({
+                url: '{{ route('subscriptions.send-late-reminders') }}',
+                method: 'POST',
+                data: {
+                    year: selectedYear,
+                    month: selectedMonth,
+                    subscription_type_id: selectedType
+                },
+                success: function(response) {
+                    toastr.success(response.message);
+                },
+                error: function() {
+                    toastr.error('حدث خطأ أثناء إرسال التذكيرات');
+                }
+            });
+        }
+    });
+});
+</script>
+@endpush
