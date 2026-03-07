@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامج إدارة مصروفات العمارات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            height: 90vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .user-role {
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .nav-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #95a5a6;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            text-align: right;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+        }
+
+        .nav-btn.active {
+            background: #3498db;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            background: #e74c3c;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-container.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 0 5px 5px 0;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-right: 4px solid #3498db;
+        }
+
+        .stat-card.success {
+            border-right-color: #27ae60;
+        }
+
+        .stat-card.danger {
+            border-right-color: #e74c3c;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .form-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-row .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .filter-row .form-group label {
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(90deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .month-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #ecf0f1;
+        }
+
+        .month-checkbox input {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .month-checkbox label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .checkbox-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-left: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+            color: #2c3e50;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        .modal-box h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: auto;
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .month-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- صفحة تسجيل الدخول -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <h2>🏢 برنامج إدارة العمارات</h2>
+            
+            <div class="form-group">
+                <label>نوع المستخدم</label>
+                <select id="userType" onchange="updateLoginForm()">
+                    <option value="admin">مدير النظام</option>
+                    <option value="manager">مدير العمارة</option>
+                    <option value="owner">مدير الوحدة السكنية</option>
+                </select>
+            </div>
+
+            <div id="adminFields">
+                <div class="form-group">
+                    <label>📧 البريد الإلكتروني</label>
+                    <input type="email" id="adminEmail" placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label>🔐 كلمة المرور</label>
+                    <input type="password" id="adminPassword" placeholder="••••••••">
+                </div>
+            </div>
+
+            <div id="managerFields" style="display:none;">
+                <div class="form-group">
+                    <label>📱 رقم الهاتف</label>
+                    <input type="tel" id="managerPhone" placeholder="01012345678">
+                </div>
+                <div class="form-group">
+                    <label>🔐 كلمة المرور</label>
+                    <input type="password" id="managerPassword" placeholder="••••••••">
+                </div>
+            </div>
+
+            <div id="ownerFields" style="display:none;">
+                <div class="form-group">
+                    <label>📱 رقم الهاتف</label>
+                    <input type="tel" id="ownerPhone" placeholder="01012345678">
+                </div>
+                <div class="form-group">
+                    <label>🔐 كلمة المرور</label>
+                    <input type="password" id="ownerPassword" placeholder="••••••••">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="handleLogin()">دخول</button>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div class="container" id="appContainer" style="display:none;">
+        <!-- الشريط الجانبي -->
+        <div class="sidebar">
+            <div class="logo">🏢 إدارة العمارات</div>
+            
+            <div class="user-info">
+                <div>مرحباً</div>
+                <div class="user-role" id="userRoleDisplay">مدير النظام</div>
+                <div style="font-size: 12px; margin-top: 5px;" id="userNameDisplay">admin</div>
+            </div>
+
+            <!-- قائمة مدير النظام -->
+            <div id="adminNav">
+                <div class="nav-section-title">الإدارة</div>
+                <button class="nav-btn active" onclick="showPage('adminDashboard', this)">📊 لوحة المعلومات</button>
+                <button class="nav-btn" onclick="showPage('buildingManagement', this)">🏗️ إدارة العمارات</button>
+                <button class="nav-btn" onclick="showPage('adminReports', this)">📊 التقارير</button>
+            </div>
+
+            <!-- قائمة مدير العمارة -->
+            <div id="managerNav" style="display:none;">
+                <div class="nav-section-title">الإدارة</div>
+                <button class="nav-btn active" onclick="showPage('managerDashboard', this)">📊 لوحة المعلومات</button>
+                <button class="nav-btn" onclick="showPage('residents', this)">👥 السكان والوحدات</button>
+                <button class="nav-btn" onclick="showPage('recordPayments', this)">💵 تسجيل المدفوعات</button>
+                <button class="nav-btn" onclick="showPage('monthlyDemands', this)">📋 المطالب الشهرية</button>
+                <button class="nav-btn" onclick="showPage('expenses', this)">💸 المصاريف</button>
+                <button class="nav-btn" onclick="showPage('buildingBalance', this)">💰 رصيد العمارة</button>
+                <button class="nav-btn" onclick="showPage('unitArears', this)">⚠️ المتأخرات</button>
+                <button class="nav-btn" onclick="showPage('managerReports', this)">📊 التقارير</button>
+            </div>
+
+            <!-- قائمة مدير الوحدة -->
+            <div id="ownerNav" style="display:none;">
+                <div class="nav-section-title">حسابي</div>
+                <button class="nav-btn active" onclick="showPage('ownerDashboard', this)">📊 لوحة المعلومات</button>
+                <button class="nav-btn" onclick="showPage('ownerArrears', this)">⚠️ المتأخرات</button>
+                <button class="nav-btn" onclick="showPage('ownerPayments', this)">💵 المدفوعات</button>
+                <button class="nav-btn" onclick="showPage('ownerExpenses', this)">📋 المصاريف</button>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="main-content">
+            <div class="header">
+                <div id="pageTitle">لوحة المعلومات</div>
+                <div id="currentDate"></div>
+            </div>
+
+            <div class="content">
+                <!-- ========== صفحات مدير النظام ========== -->
+
+                <!-- لوحة المعلومات -->
+                <div id="adminDashboard" class="page active">
+                    <h2 class="section-title">📊 لوحة المعلومات</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">إجمالي العمارات</div>
+                            <div class="stat-value">5</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">المديرون</div>
+                            <div class="stat-value">5</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-label">الاشتراكات النشطة</div>
+                            <div class="stat-value">5</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">المنتهية قريباً</div>
+                            <div class="stat-value">1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إدارة العمارات -->
+                <div id="buildingManagement" class="page">
+                    <div class="page-header">
+                        <h2 class="section-title">🏗️ إدارة العمارات</h2>
+                        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="openAddBuildingModal()">➕ إضافة</button>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <div class="stat-label">الإيراد الشهري الفعلي</div>
+                            <div class="stat-value">12,500 ج.م</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">الإيراد الشهري المتوقع</div>
+                            <div class="stat-value">15,000 ج.م</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">الأرباح/الخسائر</div>
+                            <div class="stat-value">-2,500 ج.م</div>
+                        </div>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select onchange="filterBuildings()">
+                                <option value="">-- الكل --</option>
+                                <option value="active">نشط</option>
+                                <option value="inactive">متوقف</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>العمارة</th>
+                                        <th>المحافظة</th>
+                                        <th>المدينة</th>
+                                        <th>المدير</th>
+                                        <th>الهاتف</th>
+                                        <th>الاشتراك</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="buildingsTable">
+                                    <tr data-status="active">
+                                        <td>عمارة النيل</td>
+                                        <td>القاهرة</td>
+                                        <td>المعادي</td>
+                                        <td>أحمد علي</td>
+                                        <td>01012345678</td>
+                                        <td>500 ج.م / شهري</td>
+                                        <td><span class="badge badge-success">نشط</span></td>
+                                        <td><button class="btn btn-secondary" onclick="openBuildingActions()">⚙️</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- التقارير -->
+                <div id="adminReports" class="page">
+                    <h2 class="section-title">📊 التقارير</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <div class="stat-label">الاشتراكات النشطة</div>
+                            <div class="stat-value">5</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">المنتهية</div>
+                            <div class="stat-value">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== صفحات مدير العمارة ========== -->
+
+                <!-- لوحة المعلومات -->
+                <div id="managerDashboard" class="page">
+                    <h2 class="section-title">📊 لوحة المعلومات</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">إجمالي الوحدات</div>
+                            <div class="stat-value">20</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-label">المبالغ الواردة</div>
+                            <div class="stat-value">25,000 ج.م</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">المتأخرات</div>
+                            <div class="stat-value">5,000 ج.م</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- السكان والوحدات - FINAL ✅ -->
+                <div id="residents" class="page">
+                    <div class="page-header">
+                        <h2 class="section-title">👥 السكان والوحدات</h2>
+                        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="openAddResidentModal()">➕ إضافة</button>
+                    </div>
+
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>الدور</th>
+                                        <th>الوحدة</th>
+                                        <th>النوع</th>
+                                        <th>الساكن</th>
+                                        <th>الهاتف</th>
+                                        <th>حالة الحساب</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>101</td>
+                                        <td>سكني</td>
+                                        <td>أحمد محمود</td>
+                                        <td>01012345678</td>
+                                        <td><span class="badge badge-success">نشط</span></td>
+                                        <td><button class="btn btn-secondary" onclick="openUnitActionsModal()">⚙️</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>102</td>
+                                        <td>سكني</td>
+                                        <td>فاطمة علي</td>
+                                        <td>01087654321</td>
+                                        <td><span class="badge badge-warning">معطل</span></td>
+                                        <td><button class="btn btn-secondary" onclick="openUnitActionsModal()">⚙️</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تسجيل المدفوعات -->
+                <div id="recordPayments" class="page">
+                    <div class="page-header">
+                        <h2 class="section-title">💵 تسجيل المدفوعات</h2>
+                        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="openAddPaymentModal()">➕ إضافة</button>
+                    </div>
+
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>الوحدة</th>
+                                        <th>المستحق</th>
+                                        <th>المدفوع</th>
+                                        <th>الفرق</th>
+                                        <th>الحالة</th>
+                                        <th>الطريقة</th>
+                                        <th>المستلم</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024-01-15</td>
+                                        <td>الدور 1 - 101</td>
+                                        <td>500 ج.م</td>
+                                        <td>550 ج.م</td>
+                                        <td>+50 ج.م</td>
+                                        <td><span class="badge badge-success">فائض</span></td>
+                                        <td>نقداً</td>
+                                        <td>أحمد محمود</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المطالب الشهرية -->
+                <div id="monthlyDemands" class="page">
+                    <div class="page-header">
+                        <h2 class="section-title">📋 المطالب الشهرية</h2>
+                        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="openAddDemandModal()">➕ إضافة</button>
+                    </div>
+
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>النوع</th>
+                                        <th>المبلغ</th>
+                                        <th>الدور</th>
+                                        <th>الوحدة</th>
+                                        <th>الشهور</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>صيانة</td>
+                                        <td>100 ج.م</td>
+                                        <td>1</td>
+                                        <td>101</td>
+                                        <td>يناير - ديسمبر</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المصاريف -->
+                <div id="expenses" class="page">
+                    <div class="page-header">
+                        <h2 class="section-title">💸 المصاريف</h2>
+                        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="openAddExpenseModal()">➕ إضافة</button>
+                    </div>
+
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>النوع</th>
+                                        <th>المبلغ</th>
+                                        <th>التاريخ</th>
+                                        <th>الدور</th>
+                                        <th>الوحدة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>كهرباء</td>
+                                        <td>500 ج.م</td>
+                                        <td>2024-01-15</td>
+                                        <td>1</td>
+                                        <td>101</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- رصيد العمارة -->
+                <div id="buildingBalance" class="page">
+                    <h2 class="section-title">💰 رصيد العمارة</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <div class="stat-label">💵 النقد</div>
+                            <div class="stat-value">15,000 ج.م</div>
+                            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="openTransferModal('cash')">ترحيل</button>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">🏦 البنك</div>
+                            <div class="stat-value">25,000 ج.م</div>
+                            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="openTransferModal('bank')">ترحيل</button>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <h3>الإجمالي</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">مجموع الأرصدة</div>
+                                <div class="stat-value">40,000 ج.م</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card" id="custodyDisplay" style="display:none;">
+                        <h3>العهدات</h3>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <span style="color: #856404; font-weight: bold;">📍 معه أحمد محمود - 3000 ج.م (لدفع الفواتير)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <h3>سجل الترحيلات</h3>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>من</th>
+                                        <th>إلى</th>
+                                        <th>المبلغ</th>
+                                        <th>الملاحظات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024-01-15</td>
+                                        <td>النقد</td>
+                                        <td>البنك</td>
+                                        <td>5,000 ج.م</td>
+                                        <td>ترحيل عادي</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المتأخرات -->
+                <div id="unitArears" class="page">
+                    <h2 class="section-title">⚠️ المتأخرات</h2>
+                    
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>الدور - الوحدة</th>
+                                        <th>الساكن</th>
+                                        <th>المبلغ المتأخر</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>الدور 1 - 102</td>
+                                        <td>فاطمة علي</td>
+                                        <td>500 ج.م</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- التقارير -->
+                <div id="managerReports" class="page">
+                    <h2 class="section-title">📊 التقارير</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <div class="stat-label">إجمالي الواردات</div>
+                            <div class="stat-value">25,000 ج.م</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">المتأخرات</div>
+                            <div class="stat-value">5,000 ج.م</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== صفحات مدير الوحدة السكنية ========== -->
+
+                <!-- لوحة المعلومات -->
+                <div id="ownerDashboard" class="page">
+                    <h2 class="section-title">📊 لوحة المعلومات</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">رصيد العمارة</div>
+                            <div class="stat-value">40,000 ج.م</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">المتأخر</div>
+                            <div class="stat-value">0 ج.م</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">آخر دفعة</div>
+                            <div class="stat-value">2024-01-15</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المتأخرات -->
+                <div id="ownerArrears" class="page">
+                    <h2 class="section-title">⚠️ المتأخرات</h2>
+                    <div class="form-card">
+                        <div class="stats-grid">
+                            <div class="stat-card danger">
+                                <div class="stat-label">المبلغ المتأخر</div>
+                                <div class="stat-value">0 ج.م</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- سجل المدفوعات -->
+                <div id="ownerPayments" class="page">
+                    <h2 class="section-title">💵 المدفوعات</h2>
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>المبلغ</th>
+                                        <th>الطريقة</th>
+                                        <th>المستلم</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024-01-15</td>
+                                        <td>550 ج.م</td>
+                                        <td>نقداً</td>
+                                        <td>أحمد محمود</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المصاريف -->
+                <div id="ownerExpenses" class="page">
+                    <h2 class="section-title">📋 المصاريف</h2>
+                    
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label>الشهر</label>
+                            <select id="expenseMonthFilter" onchange="filterExpenses()">
+                                <option value="">-- جميع الشهور --</option>
+                                <option value="1">يناير</option>
+                                <option value="2">فبراير</option>
+                                <option value="3">مارس</option>
+                                <option value="4">أبريل</option>
+                                <option value="5">مايو</option>
+                                <option value="6">يونيو</option>
+                                <option value="7">يوليو</option>
+                                <option value="8">أغسطس</option>
+                                <option value="9">سبتمبر</option>
+                                <option value="10">أكتوبر</option>
+                                <option value="11">نوفمبر</option>
+                                <option value="12">ديسمبر</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>النوع</th>
+                                        <th>المبلغ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-month="1">
+                                        <td>الصيانة</td>
+                                        <td>50 ج.م</td>
+                                    </tr>
+                                    <tr data-month="1">
+                                        <td>النظافة</td>
+                                        <td>50 ج.م</td>
+                                    </tr>
+                                    <tr data-month="2">
+                                        <td>الكهرباء</td>
+                                        <td>75 ج.م</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نوافذ الإضافة والمشروطة -->
+
+    <!-- نافذة إضافة عمارة -->
+    <div id="addBuildingModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>🏗️ إضافة عمارة جديدة</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>اسم العمارة</label>
+                    <input type="text" placeholder="مثال: عمارة النيل">
+                </div>
+                <div class="form-group">
+                    <label>العنوان</label>
+                    <input type="text" placeholder="الشارع والحي">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المحافظة</label>
+                    <select onchange="updateModalCities()">
+                        <option value="">-- اختر --</option>
+                        <option value="القاهرة">القاهرة</option>
+                        <option value="الجيزة">الجيزة</option>
+                        <option value="الإسكندرية">الإسكندرية</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>المدينة</label>
+                    <input type="text" placeholder="المدينة">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>اسم المدير</label>
+                    <input type="text" placeholder="الاسم الكامل">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" placeholder="01012345678">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>البريد الإلكتروني (اختياري)</label>
+                    <input type="email" placeholder="manager@example.com">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور الافتراضية</label>
+                    <input type="password" placeholder="••••••••">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>قيمة الاشتراك الشهري (ج.م)</label>
+                    <input type="number" placeholder="500">
+                </div>
+                <div class="form-group">
+                    <label>نوع الاشتراك</label>
+                    <select>
+                        <option value="monthly">شهري</option>
+                        <option value="yearly">سنوي</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>تاريخ البداية</label>
+                    <input type="date">
+                </div>
+                <div class="form-group">
+                    <label>تاريخ النهاية</label>
+                    <input type="date">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('addBuildingModal')">✅ حفظ</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: auto;" onclick="closeModal('addBuildingModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة ساكن -->
+    <div id="addResidentModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>👥 إضافة ساكن جديد</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الدور</label>
+                    <input type="number" placeholder="1">
+                </div>
+                <div class="form-group">
+                    <label>رقم الوحدة/الشقة</label>
+                    <input type="text" placeholder="101">
+                </div>
+                <div class="form-group">
+                    <label>نوع الوحدة</label>
+                    <select>
+                        <option value="سكني">سكني</option>
+                        <option value="إداري">إداري</option>
+                        <option value="تجاري">تجاري</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>اسم الساكن</label>
+                    <input type="text" placeholder="الاسم الكامل">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" placeholder="01012345678">
+                </div>
+                <div class="form-group">
+                    <label>الرقم القومي (اختياري)</label>
+                    <input type="text" placeholder="30001011234567">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('addResidentModal')">✅ حفظ</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: auto;" onclick="closeModal('addResidentModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة دفعة -->
+    <div id="addPaymentModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>💵 إضافة دفعة جديدة</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>التاريخ</label>
+                    <input type="date">
+                </div>
+                <div class="form-group">
+                    <label>الدور - رقم الوحدة</label>
+                    <select>
+                        <option>-- اختر --</option>
+                        <option value="1-101">الدور 1 - الوحدة 101</option>
+                        <option value="1-102">الدور 1 - الوحدة 102</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المبلغ المستحق</label>
+                    <input type="number" placeholder="0.00" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label>المبلغ المدفوع</label>
+                    <input type="number" placeholder="أدخل المبلغ المدفوع">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الفرق</label>
+                    <input type="number" placeholder="0.00" readonly style="background: #f8f9fa;">
+                </div>
+                <div class="form-group">
+                    <label>حالة الفرق</label>
+                    <input type="text" placeholder="متطابق" readonly style="background: #f8f9fa;">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>طريقة الدفع</label>
+                    <select>
+                        <option value="نقداً">نقداً</option>
+                        <option value="تحويل بنكي">تحويل بنكي</option>
+                        <option value="شيك">شيك</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اسم المستلم</label>
+                    <input type="text" placeholder="من استقبل المبلغ">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>رقم هاتف المستلم (اختياري)</label>
+                    <input type="tel" placeholder="01012345678">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('addPaymentModal')">✅ حفظ</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: auto;" onclick="closeModal('addPaymentModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة مطلب شهري -->
+    <div id="addDemandModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>📋 إضافة مطلب شهري</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>نوع المطلب</label>
+                    <select>
+                        <option value="">-- اختر --</option>
+                        <option value="صيانة">صيانة</option>
+                        <option value="مرافق">مرافق</option>
+                        <option value="نظافة">نظافة</option>
+                        <option value="أمن">أمن</option>
+                        <option value="جديد">إضافة جديد</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>المبلغ (ج.م)</label>
+                    <input type="number" placeholder="500">
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 15px; font-weight: bold;">الشهور</label>
+                <div class="month-grid">
+                    <div class="month-checkbox"><input type="checkbox"><label>يناير</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>فبراير</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>مارس</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>أبريل</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>مايو</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>يونيو</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>يوليو</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>أغسطس</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>سبتمبر</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>أكتوبر</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>نوفمبر</label></div>
+                    <div class="month-checkbox"><input type="checkbox"><label>ديسمبر</label></div>
+                </div>
+                <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">✓ تحديد الكل</button>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 15px; font-weight: bold;">الوحدات</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" checked>
+                        <label>الدور 1 - الوحدة 101</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" checked>
+                        <label>الدور 1 - الوحدة 102</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('addDemandModal')">✅ حفظ</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: auto;" onclick="closeModal('addDemandModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة مصروف -->
+    <div id="addExpenseModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>💸 إضافة مصروف جديد</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>نوع المصروف</label>
+                    <select>
+                        <option value="">-- اختر --</option>
+                        <option value="كهرباء">كهرباء</option>
+                        <option value="ماء">ماء</option>
+                        <option value="صيانة">صيانة</option>
+                        <option value="نظافة">نظافة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>المبلغ (ج.م)</label>
+                    <input type="number" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>التاريخ</label>
+                    <input type="date">
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 15px; font-weight: bold;">توزيع على الوحدات</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" checked>
+                        <label>الدور 1 - الوحدة 101</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" checked>
+                        <label>الدور 1 - الوحدة 102</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('addExpenseModal')">✅ حفظ</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: auto;" onclick="closeModal('addExpenseModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إجراءات الوحدة -->
+    <div id="unitActionsModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 400px;">
+            <h2>⚙️ إجراءات الوحدة</h2>
+            <div class="modal-actions" style="flex-direction: column; gap: 8px;">
+                <button class="btn btn-primary" style="background: #3498db;">✏️ تعديل بيانات الساكن</button>
+                <button class="btn btn-primary" style="background: #27ae60;">✓ تشغيل الحساب</button>
+                <button class="btn btn-primary" style="background: #e74c3c;">✕ تعطيل الحساب</button>
+                <button class="btn btn-primary" style="background: #9b59b6;">🔐 إعادة تعيين كلمة المرور</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: 100%;" onclick="closeModal('unitActionsModal')">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الترحيل -->
+    <div id="transferModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>💰 ترحيل مبلغ</h2>
+            <div class="form-group">
+                <label>المبلغ (ج.م)</label>
+                <input type="number" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>إلى الرصيد</label>
+                <select>
+                    <option value="">-- اختر --</option>
+                    <option value="cash">النقد</option>
+                    <option value="bank">البنك</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="withCustody" onchange="toggleCustodyDiv()">
+                    عهدة عند ساكن
+                </label>
+            </div>
+            <div id="custodyDiv" style="display:none;">
+                <div class="form-group">
+                    <label>الساكن</label>
+                    <select>
+                        <option>-- اختر --</option>
+                        <option value="1">أحمد محمود</option>
+                        <option value="2">فاطمة علي</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات العهدة</label>
+                    <input type="text" placeholder="مثال: لدفع الفواتير">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('transferModal')">✅ تأكيد</button>
+                <button class="btn btn-secondary" style="background: #95a5a6; color: white; width: auto;" onclick="closeModal('transferModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة أول دخول -->
+    <div id="firstLoginModal" class="modal-overlay" style="z-index: 1002;">
+        <div class="modal-box">
+            <h2>🔐 تغيير كلمة المرور</h2>
+            <p style="text-align: center; color: #7f8c8d; margin: 15px 0;">يجب تغيير كلمة المرور عند أول دخول</p>
+            <div class="form-group">
+                <label>كلمة المرور الجديدة</label>
+                <input type="password" id="newPassword" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>تأكيد كلمة المرور</label>
+                <input type="password" id="confirmPassword" placeholder="••••••••">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="submitChangePassword()">✅ تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentUserType = null;
+
+        const governoratesData = {
+            'القاهرة': ['المعادي', 'مدينة نصر', 'الزمالك', 'القاهرة الجديدة'],
+            'الجيزة': ['الجيزة', 'السادس من أكتوبر', 'الشيخ زايد'],
+            'الإسكندرية': ['الإسكندرية', 'برج العرب', 'العامرية']
+        };
+
+        function updateLoginForm() {
+            const type = document.getElementById('userType').value;
+            document.getElementById('adminFields').style.display = type === 'admin' ? 'block' : 'none';
+            document.getElementById('managerFields').style.display = type === 'manager' ? 'block' : 'none';
+            document.getElementById('ownerFields').style.display = type === 'owner' ? 'block' : 'none';
+        }
+
+        function updateModalCities() {
+            // تحديث قائمة المدن حسب المحافظة المختارة
+        }
+
+        function handleLogin() {
+            const type = document.getElementById('userType').value;
+            let username = '';
+
+            if (type === 'admin') {
+                username = document.getElementById('adminEmail').value.trim();
+                if (!username) { alert('⚠️ أدخل البريد'); return; }
+            } else if (type === 'manager') {
+                username = document.getElementById('managerPhone').value.trim();
+                if (!username) { alert('⚠️ أدخل الهاتف'); return; }
+            } else {
+                username = document.getElementById('ownerPhone').value.trim();
+                if (!username) { alert('⚠️ أدخل الهاتف'); return; }
+            }
+
+            currentUserType = type;
+            currentUser = username;
+            document.getElementById('loginContainer').classList.add('hidden');
+            document.getElementById('appContainer').style.display = 'flex';
+            updateUserInfo();
+            updateNavigation();
+            updateDate();
+            
+            // فحص أول دخول
+            if (type !== 'admin') {
+                const key = 'firstLogin_' + type + '_' + username;
+                if (!localStorage.getItem(key)) {
+                    document.getElementById('firstLoginModal').classList.add('show');
+                }
+            }
+        }
+
+        function updateUserInfo() {
+            const roles = { 'admin': 'مدير النظام', 'manager': 'مدير العمارة', 'owner': 'مدير الوحدة السكنية' };
+            document.getElementById('userRoleDisplay').textContent = roles[currentUserType];
+            document.getElementById('userNameDisplay').textContent = currentUser;
+        }
+
+        function updateNavigation() {
+            document.getElementById('adminNav').style.display = currentUserType === 'admin' ? 'block' : 'none';
+            document.getElementById('managerNav').style.display = currentUserType === 'manager' ? 'block' : 'none';
+            document.getElementById('ownerNav').style.display = currentUserType === 'owner' ? 'block' : 'none';
+        }
+
+        function updateDate() {
+            const today = new Date();
+            document.getElementById('currentDate').textContent = today.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function showPage(pageId, element) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            const titles = {
+                'adminDashboard': '📊 لوحة المعلومات',
+                'buildingManagement': '🏗️ إدارة العمارات',
+                'adminReports': '📊 التقارير',
+                'managerDashboard': '📊 لوحة المعلومات',
+                'residents': '👥 السكان والوحدات',
+                'recordPayments': '💵 تسجيل المدفوعات',
+                'monthlyDemands': '📋 المطالب الشهرية',
+                'expenses': '💸 المصاريف',
+                'buildingBalance': '💰 رصيد العمارة',
+                'unitArears': '⚠️ المتأخرات',
+                'managerReports': '📊 التقارير',
+                'ownerDashboard': '📊 لوحة المعلومات',
+                'ownerArrears': '⚠️ المتأخرات',
+                'ownerPayments': '💵 المدفوعات',
+                'ownerExpenses': '📋 المصاريف'
+            };
+            document.getElementById('pageTitle').textContent = titles[pageId] || pageId;
+        }
+
+        function logout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                document.getElementById('loginContainer').classList.remove('hidden');
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        }
+
+        // دوال النوافذ
+        function openAddBuildingModal() { document.getElementById('addBuildingModal').classList.add('show'); }
+        function openAddResidentModal() { document.getElementById('addResidentModal').classList.add('show'); }
+        function openAddPaymentModal() { document.getElementById('addPaymentModal').classList.add('show'); }
+        function openAddDemandModal() { document.getElementById('addDemandModal').classList.add('show'); }
+        function openAddExpenseModal() { document.getElementById('addExpenseModal').classList.add('show'); }
+        function openUnitActionsModal() { document.getElementById('unitActionsModal').classList.add('show'); }
+        function openBuildingActions() { document.getElementById('unitActionsModal').classList.add('show'); }
+        function openTransferModal() { document.getElementById('transferModal').classList.add('show'); }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function toggleCustodyDiv() {
+            const div = document.getElementById('custodyDiv');
+            div.style.display = document.getElementById('withCustody').checked ? 'block' : 'none';
+        }
+
+        function filterBuildings() {
+            alert('✅ تم تطبيق الفلتر');
+        }
+
+        function submitChangePassword() {
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            
+            if (!newPass || !confirmPass) {
+                alert('⚠️ أدخل كلمة المرور');
+                return;
+            }
+            
+            if (newPass !== confirmPass) {
+                alert('⚠️ كلمات المرور غير متطابقة');
+                return;
+            }
+            
+            const key = 'firstLogin_' + currentUserType + '_' + currentUser;
+            localStorage.setItem(key, 'true');
+            document.getElementById('firstLoginModal').classList.remove('show');
+            alert('✅ تم تغيير كلمة المرور بنجاح');
+        }
+
+        document.addEventListener('DOMContentLoaded', updateDate);
+    </script>
+</body>
+</html>
+
+        // دالة فلترة المصاريف حسب الشهر
+        function filterExpenses() {
+            const selectedMonth = document.getElementById('expenseMonthFilter').value;
+            const rows = document.querySelectorAll('#ownerExpenses tbody tr');
+            
+            rows.forEach(row => {
+                if (selectedMonth === '' || row.dataset.month === selectedMonth) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+

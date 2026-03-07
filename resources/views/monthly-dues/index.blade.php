@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.building-admin')
 
 @section('title', 'المستحقات الشهرية')
 @section('page-title', 'المستحقات الشهرية')
@@ -15,6 +15,9 @@
                     </a>
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generateModal">
                         <i class="fas fa-plus"></i> توليد مستحقات شهر جديد
+                    </button>
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#bulkGenerateModal">
+                        <i class="fas fa-layer-group"></i> إنشاء متعدد
                     </button>
                 </div>
             </div>
@@ -242,6 +245,184 @@ $(document).ready(function() {
                 alert(xhr.responseJSON?.message || 'حدث خطأ');
             }
         });
+    });
+});
+</script>
+@endpush
+
+<!-- Bulk Generate Modal -->
+<div class="modal fade" id="bulkGenerateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-layer-group me-2"></i> إنشاء مطالب متعددة</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="bulkGenerateForm">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">نوع المطلب <span class="text-danger">*</span></label>
+                        <input type="text" name="type" id="bulkType" class="form-control" placeholder="مثال: صيانة، نظافة، كهرباء" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">المبلغ <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" id="bulkAmount" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">اختر الشهور <span class="text-danger">*</span></label>
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-sm btn-secondary w-100" id="selectAllMonths">
+                                    ✓ تحديد الكل
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-2" id="monthsContainer">
+                            @php $months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; @endphp
+                            @foreach($months as $index => $month)
+                                <div class="col-6 col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input month-check" type="checkbox" name="months" value="{{ $index + 1 }}" id="month{{ $index }}">
+                                        <label class="form-check-label" for="month{{ $index }}">{{ $month }}</label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">اختر الشقق <span class="text-danger">*</span></label>
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-sm btn-secondary w-100" id="selectAllApartments">
+                                    ✓ تحديد الكل
+                                </button>
+                            </div>
+                        </div>
+                        <div id="apartmentsContainer" class="mt-3" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Will be loaded via AJAX -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check me-1"></i> إنشاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+const bulkGenerateModal = new bootstrap.Modal(document.getElementById('bulkGenerateModal'));
+
+// Load apartments when modal opens
+document.getElementById('bulkGenerateModal').addEventListener('show.bs.modal', function() {
+    const container = document.getElementById('apartmentsContainer');
+    container.innerHTML = '<div class="text-center"><span class="spinner-border spinner-border-sm"></span> جاري التحميل...</div>';
+    fetchApartments();
+});
+
+function fetchApartments() {
+    const container = document.getElementById('apartmentsContainer');
+
+    $.ajax({
+        url: '{{ route("apartments.index") }}',
+        type: 'GET',
+        data: { ajax: true },
+        success: function(response) {
+            if (response.data && response.data.length > 0) {
+                let html = '';
+                response.data.forEach((apt, idx) => {
+                    const aptId = apt.DT_RowId?.replace('row_', '') || idx;
+                    const aptNum = apt[0] ? $(apt[0]).text().trim() : apt.apartment_number;
+
+                    html += `
+                        <div class="form-check mb-2">
+                            <input class="form-check-input apartment-check" type="checkbox" name="apartment_ids" value="${aptId}" id="apt${aptId}">
+                            <label class="form-check-label" for="apt${aptId}">${aptNum}</label>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p class="text-muted">لا توجد شقق</p>';
+            }
+        },
+        error: function() {
+            container.innerHTML = '<p class="text-danger">خطأ في تحميل الشقق</p>';
+        }
+    });
+}
+
+// Select all months
+document.getElementById('selectAllMonths')?.addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.month-check');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+});
+
+// Select all apartments
+document.getElementById('selectAllApartments')?.addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.apartment-check');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+});
+
+// Submit bulk generate
+document.getElementById('bulkGenerateForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const months = Array.from(document.querySelectorAll('.month-check:checked')).map(cb => cb.value);
+    const apartments = Array.from(document.querySelectorAll('.apartment-check:checked')).map(cb => cb.value);
+
+    if (months.length === 0) {
+        toastr.error('اختر شهر واحد على الأقل');
+        return;
+    }
+    if (apartments.length === 0) {
+        toastr.error('اختر شقة واحدة على الأقل');
+        return;
+    }
+
+    const data = {
+        type: document.getElementById('bulkType').value,
+        amount: document.getElementById('bulkAmount').value,
+        months: months,
+        apartment_ids: apartments,
+    };
+
+    $.ajax({
+        url: '{{ route("monthly-dues.bulk-generate") }}',
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        data: data,
+        success: function(response) {
+            if (response.success) {
+                toastr.success(response.message);
+                bulkGenerateModal.hide();
+                document.getElementById('bulkGenerateForm').reset();
+                // Reload table if exists
+                if (typeof table !== 'undefined') table.ajax.reload();
+            }
+        },
+        error: function(xhr) {
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                toastr.error(xhr.responseJSON.message);
+            } else {
+                toastr.error('حدث خطأ');
+            }
+        }
     });
 });
 </script>

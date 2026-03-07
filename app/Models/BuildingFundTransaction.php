@@ -18,6 +18,9 @@ class BuildingFundTransaction extends Model
         'expense_id',
         'amount',
         'balance_after',
+        'wallet_type',
+        'custody_user_id',
+        'custody_notes',
         'description',
         'created_by',
     ];
@@ -38,7 +41,7 @@ class BuildingFundTransaction extends Model
     }
 
     /**
-     * Get the current building fund balance
+     * Get the current building fund balance (all wallet types)
      */
     public static function getCurrentBalance($tenantId)
     {
@@ -47,6 +50,45 @@ class BuildingFundTransaction extends Model
             ->first();
 
         return $lastTransaction ? $lastTransaction->balance_after : 0;
+    }
+
+    /**
+     * Get cash wallet balance
+     */
+    public static function getCashBalance($tenantId): float
+    {
+        $lastTransaction = self::where('tenant_id', $tenantId)
+            ->where('wallet_type', '=', 'cash')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // If no cash-specific transaction, return 0
+        return $lastTransaction ? (float) $lastTransaction->balance_after : 0;
+    }
+
+    /**
+     * Get bank wallet balance
+     */
+    public static function getBankBalance($tenantId): float
+    {
+        $lastTransaction = self::where('tenant_id', $tenantId)
+            ->where('wallet_type', '=', 'bank')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // If no bank-specific transaction, return 0
+        return $lastTransaction ? (float) $lastTransaction->balance_after : 0;
+    }
+
+    /**
+     * Get active custodies (عهدات)
+     */
+    public static function getActiveCustodies($tenantId)
+    {
+        return self::where('tenant_id', $tenantId)
+            ->whereNotNull('custody_user_id')
+            ->with('creator')
+            ->get();
     }
 
     /**

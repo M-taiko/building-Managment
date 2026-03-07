@@ -115,6 +115,80 @@
 
         /* ===== Cards ===== */
         .card { border-radius: 12px; border: none; }
+
+        /* ===== Bottom Sheet (المزيد) ===== */
+        .bottom-sheet-overlay {
+            position: fixed;
+            bottom: 64px; right: 0; left: 0;
+            z-index: 150;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .bottom-sheet-overlay.show {
+            display: block;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 64px; right: 0; left: 0;
+            z-index: 160;
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            max-height: 60vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform .3s ease;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+        }
+
+        .bottom-sheet.show {
+            transform: translateY(0);
+        }
+
+        .bottom-sheet-handle {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .bottom-sheet-handle::before {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+        }
+
+        .bottom-sheet-content {
+            padding: 8px 16px 16px;
+        }
+
+        .bottom-sheet-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 8px;
+            transition: all .2s;
+        }
+
+        .bottom-sheet-item:hover {
+            background: #f0f2f5;
+            color: #667eea;
+        }
+
+        .bottom-sheet-item i {
+            font-size: 18px;
+            min-width: 24px;
+        }
+
+        .bottom-sheet-item span {
+            flex: 1;
+            font-weight: 500;
+        }
     </style>
 
     @stack('styles')
@@ -190,27 +264,76 @@
             <i class="fas fa-home"></i>
             <span>الرئيسية</span>
         </a>
-        <a href="{{ route('subscriptions.payments') }}"
+        <a href="{{ route('subscriptions.index') }}"
            class="bottom-nav-item {{ request()->routeIs('subscriptions.*') ? 'active' : '' }}">
-            <i class="fas fa-money-bill-wave"></i>
-            <span>الدفعات</span>
+            <i class="fas fa-file-contract"></i>
+            <span>الاشتراكات</span>
         </a>
         <a href="{{ route('expenses.index') }}"
            class="bottom-nav-item {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
             <i class="fas fa-receipt"></i>
             <span>المصروفات</span>
         </a>
-        <a href="{{ route('maintenance.index') }}"
-           class="bottom-nav-item {{ request()->routeIs('maintenance.*') ? 'active' : '' }}">
-            <i class="fas fa-tools"></i>
-            <span>الصيانة</span>
+        <a href="{{ route('payments.index') }}"
+           class="bottom-nav-item {{ request()->routeIs('payments.*') ? 'active' : '' }}">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>المدفوعات</span>
         </a>
-        <a href="{{ route('apartments.index') }}"
-           class="bottom-nav-item {{ request()->routeIs('apartments.*') ? 'active' : '' }}">
-            <i class="fas fa-building"></i>
-            <span>الشقق</span>
+        <a href="{{ route('building-fund.index') }}"
+           class="bottom-nav-item {{ request()->routeIs('building-fund.*') ? 'active' : '' }}">
+            <i class="fas fa-piggy-bank"></i>
+            <span>الصندوق</span>
         </a>
+        <button class="bottom-nav-item" onclick="toggleBottomSheet()" type="button"
+                style="background: none; border: none; cursor: pointer;">
+            <i class="fas fa-ellipsis-h"></i>
+            <span>المزيد</span>
+        </button>
     </nav>
+
+    <!-- Bottom Sheet (المزيد) -->
+    <div class="bottom-sheet-overlay" id="bottomSheetOverlay" onclick="closeBottomSheet()"></div>
+    <div class="bottom-sheet" id="bottomSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-content">
+            <a href="{{ route('apartments.index') }}"
+               class="bottom-sheet-item {{ request()->routeIs('apartments.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-building"></i>
+                <span>إدارة الشقق</span>
+            </a>
+            <a href="{{ route('maintenance.index') }}"
+               class="bottom-sheet-item {{ request()->routeIs('maintenance.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-tools"></i>
+                <span>الصيانة</span>
+            </a>
+            <a href="{{ route('users.index') }}"
+               class="bottom-sheet-item {{ request()->routeIs('users.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-users"></i>
+                <span>المستخدمين</span>
+            </a>
+            <a href="{{ route('subscription-types.index') }}"
+               class="bottom-sheet-item {{ request()->routeIs('subscription-types.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-list"></i>
+                <span>أنواع الاشتراكات</span>
+            </a>
+            <a href="{{ route('monthly-dues.index') }}"
+               class="bottom-sheet-item {{ request()->routeIs('monthly-dues.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-calendar-alt"></i>
+                <span>المطالب الشهرية</span>
+            </a>
+            <a href="{{ route('tenants.index') }}"
+               class="bottom-sheet-item {{ request()->routeIs('tenants.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-building"></i>
+                <span>العمارات</span>
+            </a>
+            <hr class="my-2">
+            <a href="{{ route('profile.edit') }}"
+               class="bottom-sheet-item {{ request()->routeIs('profile.*') ? 'text-primary fw-bold' : '' }}">
+                <i class="fas fa-user-circle"></i>
+                <span>الملف الشخصي</span>
+            </a>
+        </div>
+    </div>
 
     <!-- Change Password Modal -->
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
@@ -294,6 +417,26 @@
                     else { toastr.error('حدث خطأ أثناء تغيير كلمة المرور'); }
                 }
             });
+        });
+
+        // Bottom Sheet Functions
+        function toggleBottomSheet() {
+            const sheet = document.getElementById('bottomSheet');
+            const overlay = document.getElementById('bottomSheetOverlay');
+            sheet.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function closeBottomSheet() {
+            const sheet = document.getElementById('bottomSheet');
+            const overlay = document.getElementById('bottomSheetOverlay');
+            sheet.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        // Close sheet when clicking on a link
+        document.querySelectorAll('.bottom-sheet-item').forEach(link => {
+            link.addEventListener('click', closeBottomSheet);
         });
     </script>
 

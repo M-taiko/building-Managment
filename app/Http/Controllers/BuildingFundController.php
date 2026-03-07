@@ -80,6 +80,66 @@ class BuildingFundController extends Controller
     }
 
     /**
+     * ترحيل مبلغ بين المحافظ (نقد/بنك)
+     */
+    public function transfer(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'from_wallet' => 'required|in:cash,bank,general',
+            'to_wallet' => 'required|in:cash,bank,general',
+            'custody_user_id' => 'nullable|exists:users,id',
+            'custody_notes' => 'nullable|string|max:500',
+        ]);
+
+        $user = auth()->user();
+        $tenant = $user->tenant;
+
+        try {
+            // Debit من المحفظة الأولى
+            $currentBalance = BuildingFundTransaction::getCurrentBalance($tenant->id);
+            if ($currentBalance < $validated['amount']) {
+                return response()->json(['error' => 'الرصيد غير كافي'], 422);
+            }
+
+            $newBalance = $currentBalance - $validated['amount'];
+            BuildingFundTransaction::create([
+                'tenant_id' => $tenant->id,
+                'transaction_type' => 'expense',
+                'source_type' => 'transfer',
+                'amount' => $validated['amount'],
+                'balance_after' => $newBalance,
+                'wallet_type' => $validated['from_wallet'],
+                'description' => "ترحيل من {$validated['from_wallet']} إلى {$validated['to_wallet']}",
+                'created_by' => auth()->id(),
+            ]);
+
+            // Credit للمحفظة الثانية
+            $newBalance = $newBalance + $validated['amount'];
+            BuildingFundTransaction::create([
+                'tenant_id' => $tenant->id,
+                'transaction_type' => 'income',
+                'source_type' => 'transfer',
+                'amount' => $validated['amount'],
+                'balance_after' => $newBalance,
+                'wallet_type' => $validated['to_wallet'],
+                'custody_user_id' => $validated['custody_user_id'] ?? null,
+                'custody_notes' => $validated['custody_notes'] ?? null,
+                'description' => "استقبال ترحيل من {$validated['from_wallet']}",
+                'created_by' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم الترحيل بنجاح',
+                'new_balance' => $newBalance,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * عرض صفحة حساب العمارة للساكن (للقراءة فقط)
      */
     public function residentView(Request $request)

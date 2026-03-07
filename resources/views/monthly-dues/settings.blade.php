@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.building-admin')
 
 @section('title', 'إعدادات المستحقات الشهرية')
 @section('page-title', 'إعدادات المستحقات الشهرية')

@@ -72,10 +72,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/monthly-dues/settings', [MonthlyDueController::class, 'settings'])->name('monthly-dues.settings');
         Route::post('/monthly-dues/update-amount', [MonthlyDueController::class, 'updateMonthlyAmount'])->name('monthly-dues.update-amount');
         Route::post('/monthly-dues/generate', [MonthlyDueController::class, 'generate'])->name('monthly-dues.generate');
+        Route::post('/monthly-dues/bulk-generate', [MonthlyDueController::class, 'bulkGenerate'])->name('monthly-dues.bulk-generate');
         Route::post('/monthly-dues/{id}/pay', [MonthlyDueController::class, 'pay'])->name('monthly-dues.pay');
 
         // Building Fund - حساب العمارة
         Route::get('/building-fund', [BuildingFundController::class, 'index'])->name('building-fund.index');
+        Route::post('/building-fund/transfer', [BuildingFundController::class, 'transfer'])->name('building-fund.transfer');
 
         // Apartment Account / Wallet
         Route::get('/apartments/{id}/account', [ApartmentAccountController::class, 'show'])->name('apartments.account');

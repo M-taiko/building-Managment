@@ -269,4 +269,66 @@ class MonthlyDueController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * إنشاء مطالب شهرية متعددة (شهور × وحدات)
+     */
+    public function bulkGenerate(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'required|string',
+            'amount' => 'required|numeric|min:0.01',
+            'months' => 'required|array|min:1',
+            'months.*' => 'integer|between:1,12',
+            'apartment_ids' => 'required|array|min:1',
+            'apartment_ids.*' => 'integer|exists:apartments,id',
+        ]);
+
+        $tenant = auth()->user()->tenant;
+        $year = now()->year;
+        $created = 0;
+
+        DB::beginTransaction();
+        try {
+            // Loop through each combination of month and apartment
+            foreach ($validated['months'] as $month) {
+                foreach ($validated['apartment_ids'] as $apartmentId) {
+                    // Check if it already exists
+                    $exists = MonthlyDue::where('apartment_id', $apartmentId)
+                        ->where('year', $year)
+                        ->where('month', $month)
+                        ->where('type', $validated['type'])
+                        ->exists();
+
+                    if (!$exists) {
+                        MonthlyDue::create([
+                            'tenant_id' => $tenant->id,
+                            'apartment_id' => $apartmentId,
+                            'year' => $year,
+                            'month' => $month,
+                            'type' => $validated['type'],
+                            'amount' => $validated['amount'],
+                            'status' => 'unpaid',
+                            'created_by' => auth()->id(),
+                        ]);
+                        $created++;
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "تم إنشاء $created مطلب شهري بنجاح",
+                'count' => $created,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
